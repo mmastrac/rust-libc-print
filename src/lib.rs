@@ -31,12 +31,12 @@ impl core::fmt::Write for LibCWriter {
 
 impl LibCWriter {
     #[inline]
-    fn write_fmt(&mut self, args: core::fmt::Arguments) -> core::fmt::Result {
+    pub fn write_fmt(&mut self, args: core::fmt::Arguments) -> core::fmt::Result {
         core::fmt::Write::write_fmt(self, args)
     }
 
     #[inline]
-    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+    pub fn write_str(&mut self, s: &str) -> core::fmt::Result {
         core::fmt::Write::write_str(self, s)
     }
 }
