@@ -32,6 +32,11 @@ impl core::fmt::Write for __LibCWriter {
 
 impl __LibCWriter {
     #[inline]
+    pub fn new(handle: u32) -> __LibCWriter {
+        __LibCWriter(handle)
+    }
+
+    #[inline]
     pub fn write_fmt(&mut self, args: core::fmt::Arguments) -> core::fmt::Result {
         core::fmt::Write::write_fmt(self, args)
     }
@@ -82,7 +87,7 @@ macro_rules! libc_println {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter($crate::__LIBC_STDOUT);
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
             stm.write_fmt(format_args!($($arg)*));
             stm.write_str($crate::__LIBC_NEWLINE);
         }
@@ -103,7 +108,7 @@ macro_rules! libc_print {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter($crate::__LIBC_STDOUT);
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
             stm.write_fmt(format_args!($($arg)*));
         }
     };
@@ -123,7 +128,7 @@ macro_rules! libc_eprintln {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter($crate::__LIBC_STDERR);
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
             stm.write_fmt(format_args!($($arg)*));
             stm.write_str($crate::__LIBC_NEWLINE);
         }
@@ -144,7 +149,7 @@ macro_rules! libc_eprint {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter($crate::__LIBC_STDERR);
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
             stm.write_fmt(format_args!($($arg)*));
         }
     };
