@@ -41,7 +41,7 @@ pub fn __nostd_println(handle: u32, msg: &str) -> core::fmt::Result {
 #[cfg(windows)]
 pub fn __nostd_println(handle: u32, msg: &str) -> core::fmt::Result {
     unsafe {
-        libc::write(handle, msg.as_ptr() as *const core::ffi::c_void, msg.len() as u32);
+        libc::write(handle as i32, msg.as_ptr() as *const core::ffi::c_void, msg.len() as u32);
         Ok(())
     }
 }
