@@ -42,13 +42,14 @@ impl __LibCWriter {
     }
 
     #[inline]
-    pub fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        core::fmt::Write::write_str(self, s)
+    pub fn write_nl(&mut self) -> core::fmt::Result {
+        __libc_println(self.0, __LIBC_NEWLINE)
     }
 }
 
 #[cfg(not(windows))]
 #[doc(hidden)]
+#[inline]
 pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
     unsafe {
         libc::write(
@@ -62,6 +63,7 @@ pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
 
 #[cfg(windows)]
 #[doc(hidden)]
+#[inline]
 pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
     unsafe {
         libc::write(
@@ -89,7 +91,7 @@ macro_rules! libc_println {
         {
             let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
             stm.write_fmt(format_args!($($arg)*));
-            stm.write_str($crate::__LIBC_NEWLINE);
+            stm.write_nl();
         }
     };
 }
@@ -130,7 +132,7 @@ macro_rules! libc_eprintln {
         {
             let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
             stm.write_fmt(format_args!($($arg)*));
-            stm.write_str($crate::__LIBC_NEWLINE);
+            stm.write_nl();
         }
     };
 }
