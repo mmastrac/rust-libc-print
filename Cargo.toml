@@ -1,0 +1,11 @@
+[package]
+name = "nostd-print"
+version = "0.1.0"
+authors = ["Matt Mastracci <matthew@mastracci.com>"]
+edition = "2018"
+
+[lib]
+name = "nostd_print"
+
+[dependencies]
+libc = "0.2.44"
