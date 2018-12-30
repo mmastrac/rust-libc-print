@@ -1,11 +1,11 @@
 [package]
-name = "nostd-print"
+name = "libc-print"
 version = "0.1.0"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2018"
 
 [lib]
-name = "nostd_print"
+name = "libc_print"
 
 [dependencies]
 libc = "0.2.44"

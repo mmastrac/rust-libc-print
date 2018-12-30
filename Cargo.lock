@@ -4,7 +4,7 @@ version = "0.2.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "nostd-print"
+name = "libc-print"
 version = "0.1.0"
 dependencies = [
  "libc 0.2.45 (registry+https://github.com/rust-lang/crates.io-index)",

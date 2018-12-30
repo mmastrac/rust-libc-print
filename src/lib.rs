@@ -1,20 +1,20 @@
 #![no_std]
 #![allow(dead_code)]
 
-pub const __NOSTD_NEWLINE: &str = "\n";
-pub const __NOSTD_STDOUT: u32 = 1;
-pub const __NOSTD_STDERR: u32 = 2;
+pub const __LIBC_NEWLINE: &str = "\n";
+pub const __LIBC_STDOUT: u32 = 1;
+pub const __LIBC_STDERR: u32 = 2;
 
-struct NoStdWriter(u32);
+struct LibCWriter(u32);
 
-impl core::fmt::Write for NoStdWriter {
+impl core::fmt::Write for LibCWriter {
     #[inline]
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        __nostd_println(self.0, s)
+        __libc_println(self.0, s)
     }
 }
 
-impl NoStdWriter {
+impl LibCWriter {
     #[inline]
     fn write_fmt(&mut self, args: core::fmt::Arguments) -> core::fmt::Result {
         core::fmt::Write::write_fmt(self, args)
@@ -27,7 +27,7 @@ impl NoStdWriter {
 }
 
 #[cfg(not(windows))]
-pub fn __nostd_println(handle: u32, msg: &str) -> core::fmt::Result {
+pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
     unsafe {
         libc::write(
             handle as i32,
@@ -39,7 +39,7 @@ pub fn __nostd_println(handle: u32, msg: &str) -> core::fmt::Result {
 }
 
 #[cfg(windows)]
-pub fn __nostd_println(handle: u32, msg: &str) -> core::fmt::Result {
+pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
     unsafe {
         libc::write(handle as i32, msg.as_ptr() as *const core::ffi::c_void, msg.len() as u32);
         Ok(())
@@ -47,46 +47,46 @@ pub fn __nostd_println(handle: u32, msg: &str) -> core::fmt::Result {
 }
 
 #[macro_export]
-macro_rules! nostd_println {
+macro_rules! libc_println {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::NoStdWriter($crate::__NOSTD_STDOUT);
+            let mut stm = $crate::LibCWriter($crate::__LIBC_STDOUT);
             stm.write_fmt(format_args!($($arg)*));
-            stm.write_str($crate::__NOSTD_NEWLINE);
+            stm.write_str($crate::__LIBC_NEWLINE);
         }
     };
 }
 
 #[macro_export]
-macro_rules! nostd_print {
+macro_rules! libc_print {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::NoStdWriter($crate::__NOSTD_STDOUT);
+            let mut stm = $crate::LibCWriter($crate::__LIBC_STDOUT);
             stm.write_fmt(format_args!($($arg)*));
         }
     };
 }
 
 #[macro_export]
-macro_rules! nostd_eprintln {
+macro_rules! libc_eprintln {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::NoStdWriter($crate::__NOSTD_STDERR);
+            let mut stm = $crate::LibCWriter($crate::__LIBC_STDERR);
             stm.write_fmt(format_args!($($arg)*));
-            stm.write_str($crate::__NOSTD_NEWLINE);
+            stm.write_str($crate::__LIBC_NEWLINE);
         }
     };
 }
 
 #[macro_export]
-macro_rules! nostd_eprint {
+macro_rules! libc_eprint {
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
-            let mut stm = $crate::NoStdWriter($crate::__NOSTD_STDERR);
+            let mut stm = $crate::LibCWriter($crate::__LIBC_STDERR);
             stm.write_fmt(format_args!($($arg)*));
         }
     };
@@ -97,28 +97,28 @@ pub mod std_name {
     #[macro_export]
     macro_rules! print {
         ($($arg:tt)*) => {
-            $crate::nostd_print!($($arg)*);
+            $crate::libc_print!($($arg)*);
         };
     }
 
     #[macro_export]
     macro_rules! println {
         ($($arg:tt)*) => {
-            $crate::nostd_println!($($arg)*);
+            $crate::libc_println!($($arg)*);
         };
     }
 
     #[macro_export]
     macro_rules! eprint {
         ($($arg:tt)*) => {
-            $crate::nostd_eprint!($($arg)*);
+            $crate::libc_eprint!($($arg)*);
         };
     }
 
     #[macro_export]
     macro_rules! eprintln {
         ($($arg:tt)*) => {
-            $crate::nostd_eprintln!($($arg)*);
+            $crate::libc_eprintln!($($arg)*);
         };
     }
 }
@@ -127,12 +127,12 @@ pub mod std_name {
 mod tests {
     #[test]
     fn test_stdout() {
-        super::nostd_println!("stdout fd = {}", super::__NOSTD_STDOUT);
+        super::libc_println!("stdout fd = {}", super::__LIBC_STDOUT);
     }
 
     #[test]
     fn test_stderr() {
-        super::nostd_eprintln!("stderr fd = {}", super::__NOSTD_STDERR);
+        super::libc_eprintln!("stderr fd = {}", super::__LIBC_STDERR);
     }
 }
 
@@ -140,11 +140,11 @@ mod tests {
 mod tests_std_name {
     #[test]
     fn test_stdout() {
-        println!("stdout fd = {}", super::__NOSTD_STDOUT);
+        println!("stdout fd = {}", super::__LIBC_STDOUT);
     }
 
     #[test]
     fn test_stderr() {
-        eprintln!("stderr fd = {}", super::__NOSTD_STDERR);
+        eprintln!("stderr fd = {}", super::__LIBC_STDERR);
     }
 }
