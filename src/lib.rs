@@ -1,11 +1,11 @@
 //! Implements `println!` and `eprintln!` on top of the `libc `crate without requiring
 //! the use of an allocator.
-//! 
-//! Allows you to use these macros in a #![no_std] context, or in a situation where the 
+//!
+//! Allows you to use these macros in a #![no_std] context, or in a situation where the
 //! traditional Rust streams might not be available (ie: at process shutdown time).
-//! 
+//!
 //! ## Usage
-//! 
+//!
 //! Exactly as you'd use `println!` or `eprintln!`.
 
 #![no_std]
@@ -20,7 +20,8 @@ pub const __LIBC_STDOUT: u32 = 1;
 #[doc(hidden)]
 pub const __LIBC_STDERR: u32 = 2;
 
-struct LibCWriter(u32);
+#[doc(hidden)]
+pub struct LibCWriter(u32);
 
 impl core::fmt::Write for LibCWriter {
     #[inline]
@@ -58,7 +59,11 @@ pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
 #[doc(hidden)]
 pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
     unsafe {
-        libc::write(handle as i32, msg.as_ptr() as *const core::ffi::c_void, msg.len() as u32);
+        libc::write(
+            handle as i32,
+            msg.as_ptr() as *const core::ffi::c_void,
+            msg.len() as u32,
+        );
         Ok(())
     }
 }
@@ -66,10 +71,10 @@ pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
 /// Macro for printing to the standard output, with a newline.
 ///
 /// Does not panic on failure to write - instead silently ignores errors.
-/// 
+///
 /// See [`println!`](https://doc.rust-lang.org/std/macro.println.html) for
 /// full documentation.
-/// 
+///
 /// You may wish to `use libc_print::std_name::*` to use a replacement
 /// `println!` macro instead of this longer name.
 #[macro_export]
@@ -84,13 +89,13 @@ macro_rules! libc_println {
     };
 }
 
-/// Macro for printing to the standard output. 
+/// Macro for printing to the standard output.
 ///
 /// Does not panic on failure to write - instead silently ignores errors.
-/// 
+///
 /// See [`print!`](https://doc.rust-lang.org/std/macro.print.html) for
 /// full documentation.
-/// 
+///
 /// You may wish to `use libc_print::std_name::*` to use a replacement
 /// `print!` macro instead of this longer name.
 #[macro_export]
@@ -107,10 +112,10 @@ macro_rules! libc_print {
 /// Macro for printing to the standard error, with a newline.
 ///
 /// Does not panic on failure to write - instead silently ignores errors.
-/// 
+///
 /// See [`eprintln!`](https://doc.rust-lang.org/std/macro.eprintln.html) for
 /// full documentation.
-/// 
+///
 /// You may wish to `use libc_print::std_name::*` to use a replacement
 /// `eprintln!` macro instead of this longer name.
 #[macro_export]
@@ -125,13 +130,13 @@ macro_rules! libc_eprintln {
     };
 }
 
-/// Macro for printing to the standard error. 
+/// Macro for printing to the standard error.
 ///
 /// Does not panic on failure to write - instead silently ignores errors.
-/// 
+///
 /// See [`eprint!`](https://doc.rust-lang.org/std/macro.eprint.html) for
 /// full documentation.
-/// 
+///
 /// You may wish to `use libc_print::std_name::*` to use a replacement
 /// `eprint!` macro instead of this longer name.
 #[macro_export]
@@ -149,10 +154,10 @@ macro_rules! libc_eprint {
 /// such as `println!`, `print!`, etc.
 #[macro_use]
 pub mod std_name {
-    /// Macro for printing to the standard output. 
+    /// Macro for printing to the standard output.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
-    /// 
+    ///
     /// See [`print!`](https://doc.rust-lang.org/std/macro.print.html) for
     /// full documentation.
     #[macro_export]
@@ -165,7 +170,7 @@ pub mod std_name {
     /// Macro for printing to the standard error, with a newline.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
-    /// 
+    ///
     /// See [`eprintln!`](https://doc.rust-lang.org/std/macro.eprintln.html) for
     /// full documentation.
     #[macro_export]
@@ -175,10 +180,10 @@ pub mod std_name {
         };
     }
 
-    /// Macro for printing to the standard error. 
+    /// Macro for printing to the standard error.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
-    /// 
+    ///
     /// See [`eprint!`](https://doc.rust-lang.org/std/macro.eprint.html) for
     /// full documentation.
     #[macro_export]
@@ -191,7 +196,7 @@ pub mod std_name {
     /// Macro for printing to the standard error, with a newline.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
-    /// 
+    ///
     /// See [`eprintln!`](https://doc.rust-lang.org/std/macro.eprintln.html) for
     /// full documentation.
     #[macro_export]
