@@ -4,6 +4,9 @@
 //! Allows you to use these macros in a #![no_std] context, or in a situation where the
 //! traditional Rust streams might not be available (ie: at process shutdown time).
 //!
+//! [`libc_writeln`] and [`libc_ewriteln`] are provided for cases where you may not wish
+//! to pull in the overhead of the formatter code and simply wish to print C-style strings.
+//! 
 //! ## Usage
 //!
 //! Exactly as you'd use `println!` or `eprintln!`.
@@ -39,6 +42,11 @@ impl __LibCWriter {
     #[inline]
     pub fn write_fmt(&mut self, args: core::fmt::Arguments) -> core::fmt::Result {
         core::fmt::Write::write_fmt(self, args)
+    }
+
+    #[inline]
+    pub fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        __libc_println(self.0, s)
     }
 
     #[inline]
@@ -157,11 +165,68 @@ macro_rules! libc_eprint {
     };
 }
 
+/// Macro for printing a static string to the standard output.
+///
+/// Does not panic on failure to write - instead silently ignores errors.
+#[macro_export]
+macro_rules! libc_write {
+    ($arg:expr) => {
+        #[allow(unused_must_use)]
+        {
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
+            stm.write_str($arg);
+        }
+    }
+}
+
+/// Macro for printing a static string to the standard error.
+///
+/// Does not panic on failure to write - instead silently ignores errors.
+#[macro_export]
+macro_rules! libc_ewrite {
+    ($arg:expr) => {
+        #[allow(unused_must_use)]
+        {
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+            stm.write_str($arg);
+        }
+    }
+}
+
+/// Macro for printing a static string to the standard output, with a newline.
+///
+/// Does not panic on failure to write - instead silently ignores errors.
+#[macro_export]
+macro_rules! libc_writeln {
+    ($arg:expr) => {
+        #[allow(unused_must_use)]
+        {
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
+            stm.write_str($arg);
+            stm.write_nl();
+        }
+    }
+}
+
+/// Macro for printing a static string to the standard error, with a newline.
+///
+/// Does not panic on failure to write - instead silently ignores errors.
+#[macro_export]
+macro_rules! libc_ewriteln {
+    ($arg:expr) => {
+        #[allow(unused_must_use)]
+        {
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+            stm.write_str($arg);
+            stm.write_nl();
+        }
+    }
+}
+
 /// This package contains the `libc_print` macros, but using the stdlib names
 /// such as `println!`, `print!`, etc.
-#[macro_use]
 pub mod std_name {
-    /// Macro for printing to the standard output.
+    /// Macro for printing to the standard output using the stdlib name.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
     ///
@@ -174,7 +239,7 @@ pub mod std_name {
         };
     }
 
-    /// Macro for printing to the standard error, with a newline.
+    /// Macro for printing to the standard error, with a newline, using the stdlib name.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
     ///
@@ -187,7 +252,7 @@ pub mod std_name {
         };
     }
 
-    /// Macro for printing to the standard error.
+    /// Macro for printing to the standard error using the stdlib name.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
     ///
@@ -200,7 +265,7 @@ pub mod std_name {
         };
     }
 
-    /// Macro for printing to the standard error, with a newline.
+    /// Macro for printing to the standard error, with a newline, using the stdlib name.
     ///
     /// Does not panic on failure to write - instead silently ignores errors.
     ///
@@ -211,6 +276,19 @@ pub mod std_name {
         ($($arg:tt)*) => {
             $crate::libc_eprintln!($($arg)*);
         };
+    }
+
+    #[cfg(test)]
+    mod tests_std_name {
+        #[test]
+        fn test_stdout() {
+            println!("stdout fd = {}", crate::__LIBC_STDOUT);
+        }
+
+        #[test]
+        fn test_stderr() {
+            eprintln!("stderr fd = {}", crate::__LIBC_STDERR);
+        }
     }
 }
 
@@ -225,17 +303,14 @@ mod tests {
     fn test_stderr() {
         super::libc_eprintln!("stderr fd = {}", super::__LIBC_STDERR);
     }
-}
 
-#[cfg(test)]
-mod tests_std_name {
     #[test]
-    fn test_stdout() {
-        println!("stdout fd = {}", super::__LIBC_STDOUT);
+    fn test_stdout_write() {
+        super::libc_writeln!("stdout!");
     }
 
     #[test]
-    fn test_stderr() {
-        eprintln!("stderr fd = {}", super::__LIBC_STDERR);
+    fn test_stderr_write() {
+        super::libc_ewriteln!("stderr!");
     }
 }
