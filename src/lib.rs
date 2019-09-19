@@ -19,12 +19,12 @@
 #[doc(hidden)]
 pub const __LIBC_NEWLINE: &str = "\n";
 #[doc(hidden)]
-pub const __LIBC_STDOUT: u32 = 1;
+pub const __LIBC_STDOUT: i32 = 1;
 #[doc(hidden)]
-pub const __LIBC_STDERR: u32 = 2;
+pub const __LIBC_STDERR: i32 = 2;
 
 #[doc(hidden)]
-pub struct __LibCWriter(u32);
+pub struct __LibCWriter(i32);
 
 impl core::fmt::Write for __LibCWriter {
     #[inline]
@@ -35,7 +35,7 @@ impl core::fmt::Write for __LibCWriter {
 
 impl __LibCWriter {
     #[inline]
-    pub fn new(handle: u32) -> __LibCWriter {
+    pub fn new(handle: i32) -> __LibCWriter {
         __LibCWriter(handle)
     }
 
@@ -58,10 +58,10 @@ impl __LibCWriter {
 #[cfg(not(windows))]
 #[doc(hidden)]
 #[inline]
-pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
+pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     unsafe {
         libc::write(
-            handle as i32,
+            handle,
             msg.as_ptr() as *const core::ffi::c_void,
             msg.len() as libc::size_t,
         );
@@ -72,10 +72,10 @@ pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
 #[cfg(windows)]
 #[doc(hidden)]
 #[inline]
-pub fn __libc_println(handle: u32, msg: &str) -> core::fmt::Result {
+pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     unsafe {
         libc::write(
-            handle as i32,
+            handle,
             msg.as_ptr() as *const core::ffi::c_void,
             msg.len() as u32,
         );
