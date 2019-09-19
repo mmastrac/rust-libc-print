@@ -14,8 +14,12 @@
 #![no_std]
 #![allow(dead_code)]
 
+/// This forces a "C" library linkage
+#[cfg(not(windows))]
 #[link(name="c")]
-extern "C" {}
+mod c {
+    extern "C" {}
+}
 
 // These constants are used by the macros but we don't want to expose
 // them to library users.
