@@ -226,60 +226,15 @@ macro_rules! libc_ewriteln {
 /// This package contains the `libc_print` macros, but using the stdlib names
 /// such as `println!`, `print!`, etc.
 pub mod std_name {
-    /// Macro for printing to the standard output using the stdlib name.
-    ///
-    /// Does not panic on failure to write - instead silently ignores errors.
-    ///
-    /// See [`print!`](https://doc.rust-lang.org/std/macro.print.html) for
-    /// full documentation.
-    #[macro_export]
-    macro_rules! print {
-        ($($arg:tt)*) => {
-            $crate::libc_print!($($arg)*);
-        };
-    }
-
-    /// Macro for printing to the standard error, with a newline, using the stdlib name.
-    ///
-    /// Does not panic on failure to write - instead silently ignores errors.
-    ///
-    /// See [`eprintln!`](https://doc.rust-lang.org/std/macro.eprintln.html) for
-    /// full documentation.
-    #[macro_export]
-    macro_rules! println {
-        ($($arg:tt)*) => {
-            $crate::libc_println!($($arg)*);
-        };
-    }
-
-    /// Macro for printing to the standard error using the stdlib name.
-    ///
-    /// Does not panic on failure to write - instead silently ignores errors.
-    ///
-    /// See [`eprint!`](https://doc.rust-lang.org/std/macro.eprint.html) for
-    /// full documentation.
-    #[macro_export]
-    macro_rules! eprint {
-        ($($arg:tt)*) => {
-            $crate::libc_eprint!($($arg)*);
-        };
-    }
-
-    /// Macro for printing to the standard error, with a newline, using the stdlib name.
-    ///
-    /// Does not panic on failure to write - instead silently ignores errors.
-    ///
-    /// See [`eprintln!`](https://doc.rust-lang.org/std/macro.eprintln.html) for
-    /// full documentation.
-    #[macro_export]
-    macro_rules! eprintln {
-        ($($arg:tt)*) => {
-            $crate::libc_eprintln!($($arg)*);
-        };
-    }
+    pub use super::libc_print as print;
+    pub use super::libc_println as println;
+    pub use super::libc_eprint as eprint;
+    pub use super::libc_eprintln as eprintln;
 
     #[cfg(test)]
     mod tests_std_name {
+        use super::{println, eprintln};
+
         #[test]
         fn test_stdout() {
             println!("stdout fd = {}", crate::__LIBC_STDOUT);
