@@ -6,7 +6,7 @@
 //!
 //! [`libc_writeln`] and [`libc_ewriteln`] are provided for cases where you may not wish
 //! to pull in the overhead of the formatter code and simply wish to print C-style strings.
-//! 
+//!
 //! ## Usage
 //!
 //! Exactly as you'd use `println!` or `eprintln!`.
@@ -101,6 +101,7 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
 /// `println!` macro instead of this longer name.
 #[macro_export]
 macro_rules! libc_println {
+    () => { libc_println!("") };
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
@@ -142,6 +143,7 @@ macro_rules! libc_print {
 /// `eprintln!` macro instead of this longer name.
 #[macro_export]
 macro_rules! libc_eprintln {
+    () => { libc_eprintln!("") };
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
