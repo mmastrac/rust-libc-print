@@ -101,7 +101,7 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
 /// `println!` macro instead of this longer name.
 #[macro_export]
 macro_rules! libc_println {
-    () => { libc_println!("") };
+    () => { $crate::libc_println!("") };
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
@@ -143,7 +143,7 @@ macro_rules! libc_print {
 /// `eprintln!` macro instead of this longer name.
 #[macro_export]
 macro_rules! libc_eprintln {
-    () => { libc_eprintln!("") };
+    () => { $crate::libc_eprintln!("") };
     ($($arg:tt)*) => {
         #[allow(unused_must_use)]
         {
