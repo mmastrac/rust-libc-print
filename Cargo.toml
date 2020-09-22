@@ -1,6 +1,6 @@
 [package]
 name = "libc-print"
-version = "0.1.13"
+version = "0.1.14"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2018"
 description = "println! and eprintln! macros on libc without stdlib"
