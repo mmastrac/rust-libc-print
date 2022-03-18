@@ -73,9 +73,9 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     let mut written = 0;
     while written < msg.len() {
         match unsafe { libc_write(handle, &msg[written..]) } {
-            Some(res) => written += res,
             // Ignore errors
-            None => break,
+            None | Some(0) => break,
+            Some(res) => written += res,
         }
     }
 
