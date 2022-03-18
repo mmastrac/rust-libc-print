@@ -13,6 +13,9 @@
 
 #![no_std]
 #![allow(dead_code)]
+#![warn(unsafe_op_in_unsafe_fn)]
+
+use core::convert::TryFrom;
 
 /// This forces a "C" library linkage
 #[cfg(not(windows))]
@@ -62,32 +65,45 @@ impl __LibCWriter {
     }
 }
 
-#[cfg(not(windows))]
 #[doc(hidden)]
 #[inline]
 pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
-    unsafe {
+    let msg = msg.as_bytes();
+
+    let mut written = 0;
+    while written < msg.len() {
+        match unsafe { libc_write(handle, &msg[written..]) } {
+            Some(res) => written += res,
+            // Ignore errors
+            None => break,
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(not(windows))]
+unsafe fn libc_write(handle: i32, bytes: &[u8]) -> Option<usize> {
+    usize::try_from(unsafe {
         libc::write(
             handle,
-            msg.as_ptr() as *const core::ffi::c_void,
-            msg.len() as libc::size_t,
-        );
-        Ok(())
-    }
+            bytes.as_ptr().cast::<core::ffi::c_void>(),
+            bytes.len(),
+        )
+    })
+    .ok()
 }
 
 #[cfg(windows)]
-#[doc(hidden)]
-#[inline]
-pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
-    unsafe {
+unsafe fn libc_write(handle: i32, bytes: &[u8]) -> Option<usize> {
+    usize::try_from(unsafe {
         libc::write(
             handle,
-            msg.as_ptr() as *const core::ffi::c_void,
-            msg.len() as u32,
-        );
-        Ok(())
-    }
+            bytes.as_ptr().cast::<core::ffi::c_void>(),
+            libc::c_uint::try_from(bytes.len()).unwrap_or(libc::c_uint::MAX),
+        )
+    })
+    .ok()
 }
 
 /// Macro for printing to the standard output, with a newline.
