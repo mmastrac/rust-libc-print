@@ -1,4 +1,4 @@
-//! Implements `println!` and `eprintln!` on top of the `libc `crate without requiring
+//! Implements `println!`, `eprintln!` and `dbg!` on top of the `libc `crate without requiring
 //! the use of an allocator.
 //!
 //! Allows you to use these macros in a #!\[no_std\] context, or in a situation where the

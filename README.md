@@ -4,7 +4,7 @@
 [![docs.rs](https://docs.rs/libc-print/badge.svg)](https://docs.rs/libc-print)
 [![crates.io](https://img.shields.io/crates/v/libc-print.svg)](https://crates.io/crates/libc-print)
 
-Implements `println!` and `eprintln!` on the `libc` crate without 
+Implements `println!`, `eprintln!` and `dbg!` on the `libc` crate without 
 requiring the use of an allocator.
 
 Allows you to use these macros in a `#![no_std]` context, or in a 
