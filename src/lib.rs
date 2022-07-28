@@ -1,7 +1,7 @@
-//! Implements `println!` and `eprintln!` on top of the `libc `crate without requiring
+//! Implements `println!`, `eprintln!` and `dbg!` on top of the `libc `crate without requiring
 //! the use of an allocator.
 //!
-//! Allows you to use these macros in a #![no_std] context, or in a situation where the
+//! Allows you to use these macros in a #!\[no_std\] context, or in a situation where the
 //! traditional Rust streams might not be available (ie: at process shutdown time).
 //!
 //! [`libc_writeln`] and [`libc_ewriteln`] are provided for cases where you may not wish
@@ -9,17 +9,43 @@
 //!
 //! ## Usage
 //!
-//! Exactly as you'd use `println!` or `eprintln!`.
+//! Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
+//!
+//! ```rust
+//! #![no_std]
+//!
+//! // ...
+//!
+//! // Use the default `libc_`-prefixed macros:
+//!
+//! libc_println!("Hello {}!", "stdout");
+//! libc_eprintln!("Hello {}!", "stderr");
+//! let a = 2;
+//! let b = libc_dbg!(a * 2) + 1;
+//! assert_eq!(b, 5);
+//!
+//! // Or you can:
+//!
+//! use libc_print::std_name;
+//!
+//! println!("Hello {}!", "stdout");
+//! eprintln!("Hello {}!", "stderr");
+//! let a = 2;
+//! let b = dbg!(a * 2) + 1;
+//! assert_eq!(b, 5);
+//! ```
+
 
 #![no_std]
 #![allow(dead_code)]
+#![allow(unused)]
 #![warn(unsafe_op_in_unsafe_fn)]
 
-use core::convert::TryFrom;
+use core::{convert::TryFrom, file, line, stringify};
 
 /// This forces a "C" library linkage
 #[cfg(not(windows))]
-#[link(name="c")]
+#[link(name = "c")]
 mod c {
     extern "C" {}
 }
@@ -201,7 +227,7 @@ macro_rules! libc_write {
             let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
             stm.write_str($arg);
         }
-    }
+    };
 }
 
 /// Macro for printing a static string to the standard error.
@@ -215,7 +241,7 @@ macro_rules! libc_ewrite {
             let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
             stm.write_str($arg);
         }
-    }
+    };
 }
 
 /// Macro for printing a static string to the standard output, with a newline.
@@ -230,7 +256,7 @@ macro_rules! libc_writeln {
             stm.write_str($arg);
             stm.write_nl();
         }
-    }
+    };
 }
 
 /// Macro for printing a static string to the standard error, with a newline.
@@ -245,20 +271,55 @@ macro_rules! libc_ewriteln {
             stm.write_str($arg);
             stm.write_nl();
         }
-    }
+    };
+}
+
+/// Prints and returns the value of a given expression for quick and dirty
+/// debugging.
+///
+/// An example:
+///
+/// ```rust
+/// let a = 2;
+/// let b = dbg!(a * 2) + 1;
+/// //      ^-- prints: [src/main.rs:2] a * 2 = 4
+/// assert_eq!(b, 5);
+/// ```
+///
+/// See [dbg!](https://doc.rust-lang.org/std/macro.dbg.html) for full documentation.
+///
+/// You may wish to `use libc_print::std_name::*` to use a replacement
+/// `dbg!` macro instead of this longer name.
+#[macro_export]
+macro_rules! libc_dbg {
+    () => {
+        $crate::libc_eprintln!("[{}:{}]", $file!(), $line!())
+    };
+    ($val:expr $(,)?) => {
+        match $val {
+            tmp => {
+                $crate::libc_eprintln!("[{}:{}] {} = {:#?}", file!(), line!(), stringify!($val), &tmp);
+                tmp
+            }
+        }
+    };
+    ($($val:expr),+ $(,)?) => {
+        ($($crate::libc_dbg!($val)),+,)
+    };
 }
 
 /// This package contains the `libc_print` macros, but using the stdlib names
 /// such as `println!`, `print!`, etc.
 pub mod std_name {
-    pub use super::libc_print as print;
-    pub use super::libc_println as println;
+    pub use super::libc_dbg as dbg;
     pub use super::libc_eprint as eprint;
     pub use super::libc_eprintln as eprintln;
+    pub use super::libc_print as print;
+    pub use super::libc_println as println;
 
     #[cfg(test)]
     mod tests_std_name {
-        use super::{println, eprintln};
+        use super::{eprintln, println};
 
         #[test]
         fn test_stdout() {
@@ -292,5 +353,12 @@ mod tests {
     #[test]
     fn test_stderr_write() {
         super::libc_ewriteln!("stderr!");
+    }
+
+    #[test]
+    fn test_dbg() {
+        let a = 2;
+        let b = libc_dbg!(a * 2) + 1;
+        assert_eq!(b, 5);
     }
 }
