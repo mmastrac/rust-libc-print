@@ -19,7 +19,7 @@ module.
 
 Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
 
-```
+```rust
 #![no_std]
 
 // ...
