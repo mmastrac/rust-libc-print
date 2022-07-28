@@ -30,7 +30,7 @@ let b = libc_dbg!(a * 2) + 1;
 assert_eq!(b, 5);
 ```
 
-Or you can import aliases to `std` names::
+Or you can import aliases to `std` names:
 
 ```rust
 use libc_print::std_name::{println, eprintln, dbg};
