@@ -1,4 +1,4 @@
-# no_std libc print/println/eprint/eprintln
+# no_std libc print/println/eprint/eprintln/dbg
 
 [![Build Status](https://api.travis-ci.org/mmastrac/rust-libc-print.svg?branch=master)](https://travis-ci.org/mmastrac/rust-libc-print)
 [![docs.rs](https://docs.rs/libc-print/badge.svg)](https://docs.rs/libc-print)
@@ -17,13 +17,28 @@ module.
 
 ## Usage
 
-Exactly as you'd use `println!` or `eprintln!`.
+Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
 
 ```
 #![no_std]
 
 // ...
 
-libc_println!("Hello {}!", "world");
-```
+// Use the default `libc_`-prefixed macros:
 
+libc_println!("Hello {}!", "stdout");
+libc_eprintln!("Hello {}!", "stderr");
+let a = 2;
+let b = libc_dbg!(a * 2) + 1;
+assert_eq!(b, 5);
+
+// Or you can:
+
+use libc_print::std_name;
+
+println!("Hello {}!", "stdout");
+eprintln!("Hello {}!", "stderr");
+let a = 2;
+let b = dbg!(a * 2) + 1;
+assert_eq!(b, 5);
+```

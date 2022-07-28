@@ -9,7 +9,32 @@
 //!
 //! ## Usage
 //!
-//! Exactly as you'd use `println!` or `eprintln!`.
+//! Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
+//!
+//! ```
+//! #![no_std]
+//!
+//! // ...
+//!
+//! // Use the default `libc_`-prefixed macros:
+//!
+//! libc_println!("Hello {}!", "stdout");
+//! libc_eprintln!("Hello {}!", "stderr");
+//! let a = 2;
+//! let b = libc_dbg!(a * 2) + 1;
+//! assert_eq!(b, 5);
+//!
+//! // Or you can:
+//!
+//! use libc_print::std_name;
+//!
+//! println!("Hello {}!", "stdout");
+//! eprintln!("Hello {}!", "stderr");
+//! let a = 2;
+//! let b = dbg!(a * 2) + 1;
+//! assert_eq!(b, 5);
+//! ```
+
 
 #![no_std]
 #![allow(dead_code)]
