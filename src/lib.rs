@@ -12,29 +12,32 @@
 //! Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
 //!
 //! ```rust
-//! #![no_std]
-//!
-//! // ...
-//!
+//! # use libc_print::*;
 //! // Use the default `libc_`-prefixed macros:
-//!
+//! # fn test1()
+//! # {
 //! libc_println!("Hello {}!", "stdout");
 //! libc_eprintln!("Hello {}!", "stderr");
 //! let a = 2;
 //! let b = libc_dbg!(a * 2) + 1;
 //! assert_eq!(b, 5);
+//! # }
+//! ```
 //!
-//! // Or you can:
+//! Or you can import aliases to `std` names:
 //!
-//! use libc_print::std_name;
+//! ```rust
+//! use libc_print::std_name::{println, eprintln, dbg};
 //!
+//! # fn test2()
+//! # {
 //! println!("Hello {}!", "stdout");
 //! eprintln!("Hello {}!", "stderr");
 //! let a = 2;
 //! let b = dbg!(a * 2) + 1;
 //! assert_eq!(b, 5);
+//! # }
 //! ```
-
 
 #![no_std]
 #![allow(dead_code)]
