@@ -148,11 +148,13 @@ unsafe fn libc_write(handle: i32, bytes: &[u8]) -> Option<usize> {
 macro_rules! libc_println {
     () => { $crate::libc_println!("") };
     ($($arg:tt)*) => {
-        #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
-            stm.write_fmt(format_args!($($arg)*));
-            stm.write_nl();
+            #[allow(unused_must_use)]
+            {
+                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
+                stm.write_fmt(format_args!($($arg)*));
+                stm.write_nl();
+            }
         }
     };
 }
@@ -169,10 +171,12 @@ macro_rules! libc_println {
 #[macro_export]
 macro_rules! libc_print {
     ($($arg:tt)*) => {
-        #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
-            stm.write_fmt(format_args!($($arg)*));
+            #[allow(unused_must_use)]
+            {
+                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDOUT);
+                stm.write_fmt(format_args!($($arg)*));
+            }
         }
     };
 }
@@ -190,11 +194,13 @@ macro_rules! libc_print {
 macro_rules! libc_eprintln {
     () => { $crate::libc_eprintln!("") };
     ($($arg:tt)*) => {
-        #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
-            stm.write_fmt(format_args!($($arg)*));
-            stm.write_nl();
+            #[allow(unused_must_use)]
+            {
+                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+                stm.write_fmt(format_args!($($arg)*));
+                stm.write_nl();
+            }
         }
     };
 }
@@ -211,10 +217,12 @@ macro_rules! libc_eprintln {
 #[macro_export]
 macro_rules! libc_eprint {
     ($($arg:tt)*) => {
-        #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
-            stm.write_fmt(format_args!($($arg)*));
+            #[allow(unused_must_use)]
+            {
+                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+                stm.write_fmt(format_args!($($arg)*));
+            }
         }
     };
 }
@@ -239,10 +247,12 @@ macro_rules! libc_write {
 #[macro_export]
 macro_rules! libc_ewrite {
     ($arg:expr) => {
-        #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
-            stm.write_str($arg);
+            #[allow(unused_must_use)]
+            {
+                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+                stm.write_str($arg);
+            }
         }
     };
 }
@@ -268,11 +278,13 @@ macro_rules! libc_writeln {
 #[macro_export]
 macro_rules! libc_ewriteln {
     ($arg:expr) => {
-        #[allow(unused_must_use)]
         {
-            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
-            stm.write_str($arg);
-            stm.write_nl();
+            #[allow(unused_must_use)]
+            {
+                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+                stm.write_str($arg);
+                stm.write_nl();
+            }
         }
     };
 }
@@ -363,5 +375,12 @@ mod tests {
         let a = 2;
         let b = libc_dbg!(a * 2) + 1;
         assert_eq!(b, 5);
+    }
+
+    #[test]
+    fn test_in_closure_expression() {
+        use super::std_name::*;
+        // https://github.com/mmastrac/rust-libc-print/issues/86
+        let _ = Result::<(), ()>::Ok(()).unwrap_or_else(|err| eprintln!("error: {:?}", err));
     }
 }
