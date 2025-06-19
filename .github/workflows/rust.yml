@@ -28,4 +28,6 @@ jobs:
     - name: Run example with RUSTFLAGS=-nostartfiles (mac)
       if: matrix.os == 'macOS-latest'
       run: "RUSTFLAGS=-C link-args=-e __start -static -nostartfiles" cargo run --example writeln
-
+    - name: Run example with RUSTFLAGS=-nostartfiles (windows)
+      if: matrix.os == 'windows-latest'
+      run: "RUSTFLAGS=-C link-args=/ENTRY:_start /SUBSYSTEM:console" cargo run --example writeln
