@@ -21,4 +21,20 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --lib --verbose
+    - name: Run example with RUSTFLAGS=-nostartfiles (linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cargo rustc -- -C link_args="-nostartfiles"
+        target/debug/examples/writeln
+    - name: Run example with RUSTFLAGS=-nostartfiles (mac)
+      if: matrix.os == 'macOS-latest'
+      run: |
+        cargo rustc -- -C link_args="-e __start -static -nostartfiles"
+        target/debug/examples/writeln
+    - name: Run example with RUSTFLAGS=-nostartfiles (windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cargo rustc -- -C link-args="/ENTRY:_start /SUBSYSTEM:console"
+        target/debug/examples/writeln
+
