@@ -17,17 +17,17 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-    - name: Run example with RUSTFLAGS=-nostartfiles (linux)
-      if: matrix.os == 'ubuntu-latest'
-      run: "RUSTFLAGS=-C link-arg=-nostartfiles" cargo run --example writeln
-    - name: Run example with RUSTFLAGS=-nostartfiles (mac)
-      if: matrix.os == 'macOS-latest'
-      run: "RUSTFLAGS=-C link-args=-e __start -static -nostartfiles" cargo run --example writeln
-    - name: Run example with RUSTFLAGS=-nostartfiles (windows)
-      if: matrix.os == 'windows-latest'
-      run: "RUSTFLAGS=-C link-args=/ENTRY:_start /SUBSYSTEM:console" cargo run --example writeln
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --verbose
+      - name: Run example with RUSTFLAGS=-nostartfiles (linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: "RUSTFLAGS=-C link-arg=-nostartfiles" cargo run --example writeln
+      - name: Run example with RUSTFLAGS=-nostartfiles (mac)
+        if: matrix.os == 'macOS-latest'
+        run: "RUSTFLAGS=-C link-args=-e __start -static -nostartfiles" cargo run --example writeln
+      - name: Run example with RUSTFLAGS=-nostartfiles (windows)
+        if: matrix.os == 'windows-latest'
+        run: "RUSTFLAGS=-C link-args=/ENTRY:_start /SUBSYSTEM:console" cargo run --example writeln
