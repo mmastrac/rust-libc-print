@@ -1,5 +1,5 @@
 use libc_print::*;
 
-fn main() {
+fn _start() {
     libc_println!("Hello, {}!", "world");
 }
