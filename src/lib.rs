@@ -46,13 +46,6 @@
 
 use core::{convert::TryFrom, file, line, stringify};
 
-/// This forces a "C" library linkage
-#[cfg(not(windows))]
-#[link(name = "c")]
-mod c {
-    extern "C" {}
-}
-
 // These constants are used by the macros but we don't want to expose
 // them to library users.
 #[doc(hidden)]
