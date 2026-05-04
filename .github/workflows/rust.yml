@@ -25,15 +25,15 @@ jobs:
     - name: Run example with RUSTFLAGS=-nostartfiles (linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cargo rustc --example writeln -- -C link_args="-nostartfiles"
+        cargo rustc --example writeln -- -C link_args="-nostartfiles" --cfg nostartfiles
         target/debug/examples/writeln
     - name: Run example with RUSTFLAGS=-nostartfiles (mac)
       if: matrix.os == 'macOS-latest'
       run: |
-        cargo rustc --example writeln -- -C link_args="-e __start -nostartfiles"
+        cargo rustc --example writeln -- -C link_args="-e __start -nostartfiles --cfg nostartfiles"
         target/debug/examples/writeln
     - name: Run example with RUSTFLAGS=-nostartfiles (windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cargo rustc --example writeln -- -C link-args="/ENTRY:_start /SUBSYSTEM:console"
+        cargo rustc --example writeln -- -C link-args="/ENTRY:_start /SUBSYSTEM:console" --cfg nostartfiles
         target/debug/examples/writeln
