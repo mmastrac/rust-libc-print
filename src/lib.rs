@@ -104,28 +104,22 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     Ok(())
 }
 
-#[cfg(not(windows))]
-unsafe fn libc_write(handle: i32, bytes: &[u8]) -> Option<usize> {
-    usize::try_from(unsafe {
-        libc::write(
-            handle,
-            bytes.as_ptr().cast::<core::ffi::c_void>(),
-            bytes.len(),
-        )
-    })
-    .ok()
+#[cfg(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))]
+mod write {
+    pub(crate) use libc::write;
 }
 
-#[cfg(windows)]
+#[cfg(not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none")))]
+mod write {
+    // The user is required to provide this
+    unsafe extern "C" {
+        pub(crate) fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize;
+    }
+}
+
 unsafe fn libc_write(handle: i32, bytes: &[u8]) -> Option<usize> {
-    usize::try_from(unsafe {
-        libc::write(
-            handle,
-            bytes.as_ptr().cast::<core::ffi::c_void>(),
-            libc::c_uint::try_from(bytes.len()).unwrap_or(libc::c_uint::MAX),
-        )
-    })
-    .ok()
+    usize::try_from(unsafe { write::write(handle as _, bytes.as_ptr() as _, bytes.len() as _) })
+        .ok()
 }
 
 /// Macro for printing to the standard output, with a newline.
@@ -239,15 +233,13 @@ macro_rules! libc_write {
 /// Does not panic on failure to write - instead silently ignores errors.
 #[macro_export]
 macro_rules! libc_ewrite {
-    ($arg:expr) => {
+    ($arg:expr) => {{
+        #[allow(unused_must_use)]
         {
-            #[allow(unused_must_use)]
-            {
-                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
-                stm.write_str($arg);
-            }
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+            stm.write_str($arg);
         }
-    };
+    }};
 }
 
 /// Macro for printing a static string to the standard output, with a newline.
@@ -270,16 +262,14 @@ macro_rules! libc_writeln {
 /// Does not panic on failure to write - instead silently ignores errors.
 #[macro_export]
 macro_rules! libc_ewriteln {
-    ($arg:expr) => {
+    ($arg:expr) => {{
+        #[allow(unused_must_use)]
         {
-            #[allow(unused_must_use)]
-            {
-                let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
-                stm.write_str($arg);
-                stm.write_nl();
-            }
+            let mut stm = $crate::__LibCWriter::new($crate::__LIBC_STDERR);
+            stm.write_str($arg);
+            stm.write_nl();
         }
-    };
+    }};
 }
 
 /// Prints and returns the value of a given expression for quick and dirty

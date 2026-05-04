@@ -1,8 +1,8 @@
 [package]
 name = "libc-print"
-version = "0.1.23"
+version = "0.2.0"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
-edition = "2018"
+edition = "2021"
 description = "println! and eprintln! macros on libc without stdlib"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-libc-print"

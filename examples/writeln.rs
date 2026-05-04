@@ -5,7 +5,9 @@ use libc_print::*;
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     libc_println!("Hello, {}!", "world");
-    unsafe { libc::exit(0); }
+    unsafe {
+        libc::exit(0);
+    }
 }
 
 #[cfg(not(nostartfiles))]
