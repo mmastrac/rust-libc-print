@@ -3,8 +3,9 @@ use libc_print::*;
 
 #[cfg(all(nostartfiles))]
 #[no_mangle]
-fn __start() {
+pub extern "C" fn _start() -> ! {
     libc_println!("Hello, {}!", "world");
+    unsafe { libc::exit(0); }
 }
 
 #[cfg(not(nostartfiles))]
