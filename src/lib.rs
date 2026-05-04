@@ -40,11 +40,9 @@
 //! ```
 
 #![no_std]
-#![allow(dead_code)]
-#![allow(unused)]
 #![warn(unsafe_op_in_unsafe_fn)]
 
-use core::{convert::TryFrom, file, line, stringify};
+use core::convert::TryFrom;
 
 // These constants are used by the macros but we don't want to expose
 // them to library users.
@@ -291,12 +289,12 @@ macro_rules! libc_ewriteln {
 #[macro_export]
 macro_rules! libc_dbg {
     () => {
-        $crate::libc_eprintln!("[{}:{}]", $file!(), $line!())
+        $crate::libc_eprintln!("[{}:{}]", ::core::file!(), ::core::line!())
     };
     ($val:expr $(,)?) => {
         match $val {
             tmp => {
-                $crate::libc_eprintln!("[{}:{}] {} = {:#?}", file!(), line!(), stringify!($val), &tmp);
+                $crate::libc_eprintln!("[{}:{}] {} = {:#?}", ::core::file!(), ::core::line!(), ::core::stringify!($val), &tmp);
                 tmp
             }
         }
