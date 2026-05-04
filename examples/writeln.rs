@@ -3,7 +3,7 @@ use libc_print::*;
 
 #[cfg(all(nostartfiles))]
 #[no_mangle]
-fn _start() {
+fn __start() {
     libc_println!("Hello, {}!", "world");
 }
 
