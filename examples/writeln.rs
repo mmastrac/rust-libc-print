@@ -1,14 +1,9 @@
 #![cfg_attr(nostartfiles, no_main)]
 use libc_print::*;
 
-#[cfg(all(nostartfiles, not(windows)))]
-fn _start() {
-    libc_println!("Hello, {}!", "world");
-}
-
-#[cfg(all(nostartfiles, windows))]
+#[cfg(all(nostartfiles))]
 #[no_mangle]
-fn mainCRTStartup() {
+fn _start() {
     libc_println!("Hello, {}!", "world");
 }
 
