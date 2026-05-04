@@ -30,7 +30,7 @@ jobs:
     - name: Run example with RUSTFLAGS=-nostartfiles (mac)
       if: matrix.os == 'macOS-latest'
       run: |
-        cargo rustc --example writeln -- -C link_args="-e __start -static -nostartfiles"
+        cargo rustc --example writeln -- -C link_args="-e __start -nostartfiles"
         target/debug/examples/writeln
     - name: Run example with RUSTFLAGS=-nostartfiles (windows)
       if: matrix.os == 'windows-latest'
