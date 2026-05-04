@@ -35,5 +35,7 @@ jobs:
     - name: Run example with RUSTFLAGS=-nostartfiles (windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cargo rustc --example writeln -- -C link-args="/ENTRY:_start /SUBSYSTEM:console" --cfg nostartfiles
+        cargo rustc --example writeln -- \
+          -C link-args="/ENTRY:_start /SUBSYSTEM:console /DEFAULTLIB:msvcrt /DEFAULTLIB:ucrt /DEFAULTLIB:vcruntime"\
+          --cfg nostartfiles
         target/debug/examples/writeln
