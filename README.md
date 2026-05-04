@@ -15,6 +15,12 @@ By default this crate provides `libc_`-prefixed macros, but also allows consumer
 import macros with the same name as the stdlib printing macros via the `std_name`
 module.
 
+## Platform Support
+
+For platforms with `write` in libc, this crate uses `libc::write`. For `unknown`
+and `none` OS targets, the user is required to provide a `write` function via
+the linker.
+
 ## Usage
 
 Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
