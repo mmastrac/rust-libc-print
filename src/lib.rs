@@ -104,12 +104,12 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     Ok(())
 }
 
-#[cfg(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))]
+#[cfg(not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none")))]
 mod write {
     pub(crate) use libc::write;
 }
 
-#[cfg(not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none")))]
+#[cfg(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))]
 mod write {
     // The user is required to provide this
     unsafe extern "C" {
