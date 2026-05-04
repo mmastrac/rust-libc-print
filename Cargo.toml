@@ -12,4 +12,9 @@ readme = "README.md"
 name = "libc_print"
 
 [dependencies]
-libc = { version = "0.2.182", default-features = false }
+libc = { version = "0.2.186", default-features = false }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(nostartfiles)'
+] }
