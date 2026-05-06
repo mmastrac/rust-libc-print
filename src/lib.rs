@@ -123,6 +123,7 @@ mod write {
     use core::ffi::c_void;
     use core::sync::atomic::{AtomicPtr, Ordering};
 
+    #[cfg(not(miri))]
     type BOOL = i32;
     type DWORD = u32;
     type ULONG = u32;
