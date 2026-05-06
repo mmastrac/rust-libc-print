@@ -16,27 +16,31 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
+        job: [test, miri]
     steps:
     - uses: actions/checkout@v3
     - name: Build
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --lib --verbose
+    - name: Install miri
+      if: matrix.job == 'miri'
+      run: |
+        rustup toolchain install nightly
+        rustup component add miri
+        echo CARGO_SUBCOMMAND='+nightly miri' >> $GITHUB_ENV
     - name: Run example with RUSTFLAGS=-nostartfiles (linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cargo rustc --example writeln -- -C link_args="-nostartfiles" --cfg nostartfiles
-        target/debug/examples/writeln
+        cargo ${CARGO_SUBCOMMAND:} run --example writeln -- -C link_args="-nostartfiles" --cfg nostartfiles
     - name: Run example with RUSTFLAGS=-nostartfiles (mac)
       if: matrix.os == 'macOS-latest'
       run: |
-        cargo rustc --example writeln -- -C link_args="-e __start -nostartfiles" --cfg nostartfiles
-        target/debug/examples/writeln
+        cargo ${CARGO_SUBCOMMAND:} run --example writeln -- -C link_args="-e __start -nostartfiles" --cfg nostartfiles
     - name: Run example with RUSTFLAGS=-nostartfiles (windows)
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
-        cargo rustc --example writeln -- \
+        cargo ${CARGO_SUBCOMMAND:} run --example writeln -- \
           --cfg nostartfiles \
           -C link-args="/ENTRY:_start /SUBSYSTEM:console /DEFAULTLIB:msvcrt /DEFAULTLIB:ucrt /DEFAULTLIB:vcruntime"
-        target/debug/examples/writeln
