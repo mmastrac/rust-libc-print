@@ -120,7 +120,8 @@ mod write {
 
 #[cfg(windows)]
 mod write {
-    use core::{ffi::c_void, sync::atomic::AtomicPtr};
+    use core::ffi::c_void;
+    use core::sync::atomic::{AtomicPtr, Ordering};
 
     type BOOL = i32;
     type DWORD = u32;
@@ -143,8 +144,6 @@ mod write {
 
     #[inline]
     unsafe fn handle_from_fd(fd: i32) -> Option<HANDLE> {
-        use core::sync::atomic::{AtomicPtr, Ordering};
-                
         static STD_OUTPUT: AtomicPtr<c_void> = AtomicPtr::new(INVALID_HANDLE_VALUE as _);
         static STD_ERROR: AtomicPtr<c_void> = AtomicPtr::new(INVALID_HANDLE_VALUE as _);
 
@@ -156,7 +155,7 @@ mod write {
 
         let mut handle = which.load(Ordering::Relaxed);
         if handle as isize == INVALID_HANDLE_VALUE {
-            handle = GetStdHandle(std_handle);
+            handle = unsafe { GetStdHandle(std_handle) };
             which.store(handle, Ordering::Relaxed);
         }
 

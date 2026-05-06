@@ -27,7 +27,7 @@ jobs:
       if: matrix.job == 'miri'
       run: |
         rustup toolchain install nightly
-        rustup component add miri
+        rustup component add --toolchain=nightly miri
         echo CARGO_SUBCOMMAND='+nightly miri' >> $GITHUB_ENV
     - name: Run example with RUSTFLAGS=-nostartfiles (linux)
       if: matrix.os == 'ubuntu-latest'
