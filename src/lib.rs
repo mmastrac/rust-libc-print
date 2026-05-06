@@ -102,7 +102,10 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     Ok(())
 }
 
-#[cfg(not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none")))]
+#[cfg(all(
+    not(all(windows, miri)),
+    not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))
+))]
 mod write {
     pub(crate) use libc::write;
 }
@@ -112,6 +115,167 @@ mod write {
     // The user is required to provide this
     unsafe extern "C" {
         pub(crate) fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize;
+    }
+}
+
+// Note: we may offer the lower-level WriteFile in the future.
+#[cfg(all(windows, miri))]
+mod write {
+    use core::ffi::c_void;
+    use core::sync::atomic::{AtomicPtr, Ordering};
+
+    #[cfg(not(miri))]
+    type BOOL = i32;
+    type DWORD = u32;
+    type ULONG = u32;
+    type HANDLE = *mut c_void;
+    type NTSTATUS = i32;
+
+    const INVALID_HANDLE_VALUE: isize = -1;
+    const STD_OUTPUT_HANDLE: DWORD = (-11i32) as DWORD;
+    const STD_ERROR_HANDLE: DWORD = (-12i32) as DWORD;
+
+    // https://learn.microsoft.com/windows-hardware/drivers/ddi/wdm/ns-wdm-_io_status_block
+    // The first field is a pointer-sized union; model it as `usize`.
+    #[cfg(miri)]
+    #[cfg(target_pointer_width = "64")]
+    #[repr(C)]
+    struct IO_STATUS_BLOCK {
+        status_or_ptr: usize,
+        information: usize,
+    }
+
+    #[cfg(miri)]
+    #[cfg(target_pointer_width = "32")]
+    #[repr(C)]
+    struct IO_STATUS_BLOCK {
+        status_or_ptr: u32,
+        information: u32,
+    }
+
+    unsafe extern "system" {
+        fn GetStdHandle(nStdHandle: DWORD) -> HANDLE;
+
+        #[cfg(not(miri))]
+        fn WriteFile(
+            hFile: HANDLE,
+            lpBuffer: *const c_void,
+            nNumberOfBytesToWrite: DWORD,
+            lpNumberOfBytesWritten: *mut DWORD,
+            lpOverlapped: *mut c_void,
+        ) -> BOOL;
+
+        #[cfg(miri)]
+        fn NtWriteFile(
+            FileHandle: HANDLE,
+            Event: HANDLE,
+            ApcRoutine: *mut c_void,
+            ApcContext: *mut c_void,
+            IoStatusBlock: *mut IO_STATUS_BLOCK,
+            Buffer: *const c_void,
+            Length: ULONG,
+            ByteOffset: *mut c_void,
+            Key: *mut c_void,
+        ) -> NTSTATUS;
+    }
+
+    #[inline]
+    fn cached_std_handle(fd: i32) -> Option<(DWORD, &'static AtomicPtr<c_void>)> {
+        static STD_OUTPUT: AtomicPtr<c_void> = AtomicPtr::new(INVALID_HANDLE_VALUE as _);
+        static STD_ERROR: AtomicPtr<c_void> = AtomicPtr::new(INVALID_HANDLE_VALUE as _);
+
+        match fd {
+            1 => Some((STD_OUTPUT_HANDLE, &STD_OUTPUT)),
+            2 => Some((STD_ERROR_HANDLE, &STD_ERROR)),
+            _ => None,
+        }
+    }
+
+    #[inline]
+    fn handle_from_fd(fd: i32) -> Option<HANDLE> {
+        let (std_handle, which) = cached_std_handle(fd)?;
+
+        // Races are OK - we will get the same value each time assuming nobody
+        // is calling SetStdHandle at the same time.
+        let mut handle = which.load(Ordering::Relaxed);
+        if handle.is_null() || handle as isize == INVALID_HANDLE_VALUE {
+            handle = unsafe { GetStdHandle(std_handle) } as *mut c_void;
+            if handle.is_null() || handle as isize == INVALID_HANDLE_VALUE {
+                return None;
+            }
+            which.store(handle, Ordering::Relaxed);
+        }
+
+        Some(handle as HANDLE)
+    }
+
+    #[cfg(miri)]
+    pub(crate) unsafe fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize {
+        let h = match handle_from_fd(fd) {
+            Some(h) => h,
+            None => return -1,
+        };
+
+        let len: ULONG = match ULONG::try_from(nbyte) {
+            Ok(v) => v,
+            Err(_) => ULONG::MAX,
+        };
+
+        let mut iosb = IO_STATUS_BLOCK {
+            status_or_ptr: 0,
+            information: 0,
+        };
+
+        let status = unsafe {
+            NtWriteFile(
+                h,
+                core::ptr::null_mut(),
+                core::ptr::null_mut(),
+                core::ptr::null_mut(),
+                &mut iosb,
+                buf as *const c_void,
+                len,
+                core::ptr::null_mut(),
+                core::ptr::null_mut(),
+            )
+        };
+
+        // NT_SUCCESS: status >= 0
+        if status < 0 {
+            -1
+        } else {
+            iosb.information as isize
+        }
+    }
+
+    #[cfg(not(miri))]
+    pub(crate) unsafe fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize {
+        let h = match handle_from_fd(fd) {
+            Some(h) => h,
+            None => return -1,
+        };
+
+        let to_write: DWORD = match DWORD::try_from(nbyte) {
+            Ok(v) => v,
+            Err(_) => DWORD::MAX,
+        };
+
+        let mut written: DWORD = 0;
+        let ok = unsafe {
+            WriteFile(
+                h,
+                buf as *const c_void,
+                to_write,
+                &mut written,
+                core::ptr::null_mut(),
+            )
+        };
+
+        if ok == 0 {
+            -1
+        } else {
+            written as isize
+        }
     }
 }
 
