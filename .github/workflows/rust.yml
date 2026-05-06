@@ -32,15 +32,15 @@ jobs:
     - name: Run example with RUSTFLAGS=-nostartfiles (linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
-        cargo ${CARGO_SUBCOMMAND:} run --example writeln -- -C link_args="-nostartfiles" --cfg nostartfiles
+        cargo ${CARGO_SUBCOMMAND:-} run --example writeln -- -C link_args="-nostartfiles" --cfg nostartfiles
     - name: Run example with RUSTFLAGS=-nostartfiles (mac)
       if: matrix.os == 'macOS-latest'
       run: |
-        cargo ${CARGO_SUBCOMMAND:} run --example writeln -- -C link_args="-e __start -nostartfiles" --cfg nostartfiles
+        cargo ${CARGO_SUBCOMMAND:-} run --example writeln -- -C link_args="-e __start -nostartfiles" --cfg nostartfiles
     - name: Run example with RUSTFLAGS=-nostartfiles (windows)
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
-        cargo ${CARGO_SUBCOMMAND:} run --example writeln -- \
+        cargo ${CARGO_SUBCOMMAND:-} run --example writeln -- \
           --cfg nostartfiles \
           -C link-args="/ENTRY:_start /SUBSYSTEM:console /DEFAULTLIB:msvcrt /DEFAULTLIB:ucrt /DEFAULTLIB:vcruntime"
