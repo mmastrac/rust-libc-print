@@ -25,6 +25,7 @@ jobs:
       run: cargo test --lib --verbose
     - name: Install miri
       if: matrix.job == 'miri'
+      shell: bash
       run: |
         rustup toolchain install nightly
         rustup component add --toolchain=nightly miri
