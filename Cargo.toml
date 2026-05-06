@@ -12,8 +12,6 @@ readme = "README.md"
 name = "libc_print"
 
 [dependencies]
-
-[target.'cfg(not(windows))'.dependencies]
 libc = { version = "0.2.186", default-features = false }
 
 [lints.rust]

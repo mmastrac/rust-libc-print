@@ -103,7 +103,7 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
 }
 
 #[cfg(all(
-    not(windows),
+    not(all(windows, miri)),
     not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))
 ))]
 mod write {
@@ -118,7 +118,7 @@ mod write {
     }
 }
 
-#[cfg(windows)]
+#[cfg(all(windows, miri))]
 mod write {
     use core::ffi::c_void;
     use core::sync::atomic::{AtomicPtr, Ordering};
