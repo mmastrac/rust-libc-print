@@ -153,9 +153,14 @@ mod write {
             _ => return None,
         };
 
+        // Races are OK - we will get the same value each time assuming nobody
+        // is calling SetStdHandle at the same time.
         let mut handle = which.load(Ordering::Relaxed);
         if handle as isize == INVALID_HANDLE_VALUE {
             handle = unsafe { GetStdHandle(std_handle) };
+            if handle.is_null() || handle as isize == INVALID_HANDLE_VALUE {
+                return None;
+            }
             which.store(handle, Ordering::Relaxed);
         }
 
@@ -188,7 +193,11 @@ mod write {
             )
         };
 
-        if ok == 0 { -1 } else { written as isize }
+        if ok == 0 {
+            -1
+        } else {
+            written as isize
+        }
     }
 }
 
