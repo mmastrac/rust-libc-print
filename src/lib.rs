@@ -102,7 +102,10 @@ pub fn __libc_println(handle: i32, msg: &str) -> core::fmt::Result {
     Ok(())
 }
 
-#[cfg(not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none")))]
+#[cfg(all(
+    not(windows),
+    not(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))
+))]
 mod write {
     pub(crate) use libc::write;
 }
@@ -112,6 +115,81 @@ mod write {
     // The user is required to provide this
     unsafe extern "C" {
         pub(crate) fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize;
+    }
+}
+
+#[cfg(windows)]
+mod write {
+    use core::{ffi::c_void, sync::atomic::AtomicPtr};
+
+    type BOOL = i32;
+    type DWORD = u32;
+    type HANDLE = *mut c_void;
+
+    const INVALID_HANDLE_VALUE: isize = -1;
+    const STD_OUTPUT_HANDLE: DWORD = (-11i32) as DWORD;
+    const STD_ERROR_HANDLE: DWORD = (-12i32) as DWORD;
+
+    unsafe extern "system" {
+        fn GetStdHandle(nStdHandle: DWORD) -> HANDLE;
+        fn WriteFile(
+            hFile: HANDLE,
+            lpBuffer: *const c_void,
+            nNumberOfBytesToWrite: DWORD,
+            lpNumberOfBytesWritten: *mut DWORD,
+            lpOverlapped: *mut c_void,
+        ) -> BOOL;
+    }
+
+    #[inline]
+    unsafe fn handle_from_fd(fd: i32) -> Option<HANDLE> {
+        use core::sync::atomic::{AtomicPtr, Ordering};
+                
+        static STD_OUTPUT: AtomicPtr<c_void> = AtomicPtr::new(INVALID_HANDLE_VALUE as _);
+        static STD_ERROR: AtomicPtr<c_void> = AtomicPtr::new(INVALID_HANDLE_VALUE as _);
+
+        let (std_handle, which) = match fd {
+            1 => (STD_OUTPUT_HANDLE, &STD_OUTPUT),
+            2 => (STD_ERROR_HANDLE, &STD_ERROR),
+            _ => return None,
+        };
+
+        let mut handle = which.load(Ordering::Relaxed);
+        if handle as isize == INVALID_HANDLE_VALUE {
+            handle = GetStdHandle(std_handle);
+            which.store(handle, Ordering::Relaxed);
+        }
+
+        if handle as isize == INVALID_HANDLE_VALUE {
+            None
+        } else {
+            Some(handle as HANDLE)
+        }
+    }
+
+    pub(crate) unsafe fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize {
+        let h = match unsafe { handle_from_fd(fd) } {
+            Some(h) => h,
+            None => return -1,
+        };
+
+        let to_write: DWORD = match DWORD::try_from(nbyte) {
+            Ok(v) => v,
+            Err(_) => DWORD::MAX,
+        };
+
+        let mut written: DWORD = 0;
+        let ok = unsafe {
+            WriteFile(
+                h,
+                buf as *const c_void,
+                to_write,
+                &mut written,
+                core::ptr::null_mut(),
+            )
+        };
+
+        if ok == 0 { -1 } else { written as isize }
     }
 }
 
