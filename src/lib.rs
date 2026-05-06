@@ -118,6 +118,7 @@ mod write {
     }
 }
 
+// Note: we may offer the lower-level WriteFile in the future.
 #[cfg(all(windows, miri))]
 mod write {
     use core::ffi::c_void;
