@@ -21,6 +21,9 @@ For platforms with `write` in libc, this crate uses `libc::write`. For `unknown`
 and `none` OS targets, the user is required to provide a `write` function via
 the linker.
 
+This crate support `miri` on all platforms, though it may choose different code
+paths for compatibility reasons.
+
 ## Usage
 
 Exactly as you'd use `println!`, `eprintln!` and `dbg!`.
