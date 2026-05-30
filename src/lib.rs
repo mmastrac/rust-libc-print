@@ -111,6 +111,7 @@ mod write {
 }
 
 #[cfg(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))]
+#[cfg_attr(all(target_family = "wasm", target_os = "unknown"), link(wasm_import_module = "env"))]
 mod write {
     // The user is required to provide this
     unsafe extern "C" {
