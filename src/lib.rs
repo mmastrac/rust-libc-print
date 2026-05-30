@@ -111,9 +111,9 @@ mod write {
 }
 
 #[cfg(any(all(target_family = "wasm", target_os = "unknown"), target_os = "none"))]
-#[cfg_attr(all(target_family = "wasm", target_os = "unknown"), link(wasm_import_module = "env"))]
 mod write {
     // The user is required to provide this
+    #[cfg_attr(all(target_family = "wasm", target_os = "unknown"), link(wasm_import_module = "env"))]
     unsafe extern "C" {
         pub(crate) fn write(fd: i32, buf: *const u8, nbyte: usize) -> isize;
     }
